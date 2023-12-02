@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sagi_jeonae_app/src/widgets/search_textfield_button.dart';
+import 'package:sagi_jeonae_app/src/widgets/search_result_table.dart';
 
 void main() {
   runApp(const MyApp());
@@ -79,7 +80,7 @@ class _MyHomePageState extends State<MyHomePage> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => ProductInfoPage(data: userInput),
+          builder: (context) => SearchInfoPage(data: userInput),
         ),
       );
     }
@@ -87,13 +88,19 @@ class _MyHomePageState extends State<MyHomePage> {
 }
 
 
-class ProductInfoPage extends StatelessWidget {
+class SearchInfoPage extends StatelessWidget {
   final String data;
 
-  const ProductInfoPage({super.key, required this.data});
+  const SearchInfoPage({super.key, required this.data});
 
   @override
   Widget build(BuildContext context) {
+    List<List<String>> tableData = [
+      ['Product Name', '물건'],
+      ['Price', '\$${10000.toString()}'],
+      // Add more details as needed
+    ];
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('검색 결과'),
@@ -101,7 +108,16 @@ class ProductInfoPage extends StatelessWidget {
       body: Center(
           child: Column(
             children: [
-              Text(data ?? 'no data'),
+              Text('검색어 : $data'),
+              Container(
+                alignment: Alignment.center,
+                transformAlignment: Alignment.center,
+                margin: const EdgeInsets.all(8.0),
+                child: SelectionArea(
+                  child: SearchResultTable(
+                      data: tableData),
+                ),
+              ),
               ElevatedButton(
                 onPressed: () {
                   Navigator.pop(context);
