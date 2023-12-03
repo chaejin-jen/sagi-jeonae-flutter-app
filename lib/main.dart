@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sagi_jeonae_app/src/widgets/search_textfield_button.dart';
 
 void main() {
   runApp(const MyApp());
@@ -34,50 +35,54 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('사기 전에'),
-      ),
-      body: Center(
-        child: Column(
+    return DefaultTabController(
+      length: 3,
+      child: Scaffold(
+        appBar: AppBar(
+          bottom: const TabBar(
+            tabs: [
+              Tab(icon: Icon(Icons.link), text: 'url'),
+              Tab(icon: Icon(Icons.shopping_bag), text: '상품'),
+              Tab(icon: Icon(Icons.factory), text: '제조사/수입사'),
+            ],
+          ),
+          title: const Text('사기 전에'),
+        ),
+        body: TabBarView(
             children: [
-              Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: TextField(
-                  controller: _inputController,
-                  decoration: const InputDecoration(
-                    labelText: '🔍',
-                  ),
-                ),
-              ),
-              ElevatedButton(
-                child: const Text('검색 하기'),
-                onPressed: () {
-                  String userInput = _inputController.text.trim();
-                  if (userInput.isEmpty) {
-                    final snackBar = SnackBar(
-                      content: const Text('검색어를 입력해 주세요'),
-                      action: SnackBarAction(
-                        label: 'Undo',
-                        onPressed: () {},
-                      ),
-                    );
-
-                    ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                  } else {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) =>
-                              ProductInfoPage(data: userInput)),
-                    );
-                  }
-                },
-              ),
+              SearchTextFieldButton(
+                  controller: _inputController, onSearch: _handleSearch),
+              SearchTextFieldButton(
+                  controller: _inputController, onSearch: _handleSearch),
+              SearchTextFieldButton(
+                  controller: _inputController, onSearch: _handleSearch),
             ]
         ),
       ),
     );
+  }
+
+  void _handleSearch() {
+    String userInput = _inputController.text.trim();
+
+    if (userInput.isEmpty) {
+      final snackBar = SnackBar(
+        content: const Text('검색어를 입력해 주세요'),
+        action: SnackBarAction(
+          label: 'Undo',
+          onPressed: () {},
+        ),
+      );
+
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    } else {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ProductInfoPage(data: userInput),
+        ),
+      );
+    }
   }
 }
 
@@ -94,17 +99,17 @@ class ProductInfoPage extends StatelessWidget {
         title: const Text('검색 결과'),
       ),
       body: Center(
-        child: Column(
-          children: [
-            Text(data ?? 'no data'),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: const Text('홈으로!'),
-            ),
-          ],
-        )
+          child: Column(
+            children: [
+              Text(data ?? 'no data'),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: const Text('홈으로!'),
+              ),
+            ],
+          )
       ),
     );
   }
