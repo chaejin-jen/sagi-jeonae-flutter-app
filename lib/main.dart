@@ -42,8 +42,8 @@ class _MyHomePageState extends State<MyHomePage> {
           bottom: const TabBar(
             tabs: [
               Tab(icon: Icon(Icons.link), text: 'url'),
-              Tab(icon: Icon(Icons.shopping_bag), text: '상품'),
-              Tab(icon: Icon(Icons.factory), text: '제조사/수입사'),
+              Tab(icon: Icon(Icons.shopping_bag), text: '제품명'),
+              Tab(icon: Icon(Icons.factory), text: '제조사/수입사명'),
             ],
           ),
           title: const Text('사기 전에'),
