@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sagi_jeonae_app/src/services/search_service.dart';
 import 'package:sagi_jeonae_app/src/widgets/search_textfield_button.dart';
 import 'package:sagi_jeonae_app/src/widgets/search_result_table.dart';
 
@@ -36,6 +37,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final searchService = SearchService();
+    
     return DefaultTabController(
       length: 3,
       child: Scaffold(
@@ -52,18 +55,24 @@ class _MyHomePageState extends State<MyHomePage> {
         body: TabBarView(
             children: [
               SearchTextFieldButton(
-                  controller: _inputController, onSearch: _handleSearch),
+                  controller: _inputController,
+                  onSearch: () => _handleSearch(searchService.searchByUrl)
+              ),
               SearchTextFieldButton(
-                  controller: _inputController, onSearch: _handleSearch),
+                  controller: _inputController,
+                  onSearch: () => _handleSearch(searchService.searchByProductName)
+              ),
               SearchTextFieldButton(
-                  controller: _inputController, onSearch: _handleSearch),
+                  controller: _inputController,
+                  onSearch: () => _handleSearch(searchService.searchByCompanyName)
+              ),
             ]
         ),
       ),
     );
   }
 
-  void _handleSearch() {
+  void _handleSearch(Future<List<Map<String, dynamic>>?> Function(String) searchFunction) {
     String userInput = _inputController.text.trim();
 
     if (userInput.isEmpty) {
@@ -77,21 +86,33 @@ class _MyHomePageState extends State<MyHomePage> {
 
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
     } else {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => SearchInfoPage(data: userInput),
-        ),
-      );
+      try {
+        searchFunction(userInput).then((searchResult) =>
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) =>
+                  SearchInfoPage(keyword: userInput, data: searchResult),
+            ),
+          )
+        );
+      } catch (e) {
+        debugPrint('Error during search: $e');
+      }
     }
   }
 }
 
 
 class SearchInfoPage extends StatelessWidget {
-  final String data;
+  final String keyword;
+  final List<Map<String, dynamic>>? data;
 
-  const SearchInfoPage({super.key, required this.data});
+  const SearchInfoPage({
+    super.key,
+    required this.keyword,
+    required this.data
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -101,6 +122,13 @@ class SearchInfoPage extends StatelessWidget {
       // Add more details as needed
     ];
 
+    for (var item in data ?? []){
+      for (var key in item.keys) {
+        debugPrint('$key: ${item[key]}');
+      }
+      debugPrint('====================');
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('검색 결과'),
@@ -108,7 +136,7 @@ class SearchInfoPage extends StatelessWidget {
       body: Center(
           child: Column(
             children: [
-              Text('검색어 : $data'),
+              Text('검색어 : $keyword'),
               Container(
                 alignment: Alignment.center,
                 transformAlignment: Alignment.center,
