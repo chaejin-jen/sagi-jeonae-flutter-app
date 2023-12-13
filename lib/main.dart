@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:sagi_jeonae_app/src/services/search_service.dart';
 import 'package:sagi_jeonae_app/src/widgets/search_textfield_button.dart';
 import 'package:sagi_jeonae_app/src/widgets/search_result_table.dart';
+import 'package:sagi_jeonae_app/src/widgets/common/toggle_list_view.dart';
 
 void main() {
   runApp(const MyApp());
@@ -122,22 +123,26 @@ class SearchResultPage extends StatelessWidget {
       appBar: AppBar(
         title: const Text('검색 결과'),
       ),
-      body: SingleChildScrollView(
-        child: Column(
+      body: Column(
           children: [
-            Text(
-                '검색어 : $keyword', maxLines: 1, overflow: TextOverflow.ellipsis),
+            Text('검색어 : $keyword', maxLines: 1, overflow: TextOverflow.ellipsis),
             Text('검색 결과 ${data?.length ?? 0} 건'),
             if (data != null && data!.isNotEmpty)
-              for (var item in data!)
-                Container(
-                  alignment: Alignment.center,
-                  transformAlignment: Alignment.center,
-                  margin: const EdgeInsets.all(8.0),
-                  child: SearchResultTable(data: item ?? {}),
+              Expanded(
+                child: ToggleListView(
+                  customTitles: generateCustomTitle(data),
+                  children: [
+                    for (var item in data!)
+                      Container(
+                        alignment: Alignment.center,
+                        transformAlignment: Alignment.center,
+                        margin: const EdgeInsets.all(8.0),
+                        child: SearchResultTable(data: item ?? {}),
+                      ),
+                  ],
                 ),
-          ],
-        ),
+              ),
+          ]
       ),
     );
   }
