@@ -38,7 +38,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     final searchService = SearchService();
-    
+
     return DefaultTabController(
       length: 3,
       child: Scaffold(
@@ -46,7 +46,7 @@ class _MyHomePageState extends State<MyHomePage> {
           bottom: const TabBar(
             tabs: [
               Tab(icon: Icon(Icons.link), text: 'url'),
-              Tab(icon: Icon(Icons.shopping_bag), text: '제품명'),
+              Tab(icon: Icon(Icons.shopping_bag), text: '모델명'),
               Tab(icon: Icon(Icons.factory), text: '제조사/수입사명'),
             ],
           ),
@@ -60,11 +60,13 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
               SearchTextFieldButton(
                   controller: _inputController,
-                  onSearch: () => _handleSearch(searchService.searchByProductName)
+                  onSearch: () =>
+                      _handleSearch(searchService.searchByProductName)
               ),
               SearchTextFieldButton(
                   controller: _inputController,
-                  onSearch: () => _handleSearch(searchService.searchByCompanyName)
+                  onSearch: () =>
+                      _handleSearch(searchService.searchByCompanyName)
               ),
             ]
         ),
@@ -87,15 +89,15 @@ class _MyHomePageState extends State<MyHomePage> {
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
     } else {
       try {
-        searchFunction(userInput).then((searchResult) =>
+        searchFunction(userInput).then((searchResult) {
           Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) =>
                   SearchInfoPage(keyword: userInput, data: searchResult),
             ),
-          )
-        );
+          );
+        });
       } catch (e) {
         debugPrint('Error during search: $e');
       }
@@ -106,7 +108,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
 class SearchInfoPage extends StatelessWidget {
   final String keyword;
-  final List<Map<String, dynamic>>? data;
+  final List<Map<String, dynamic>?>? data;
 
   const SearchInfoPage({
     super.key,
@@ -116,45 +118,41 @@ class SearchInfoPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    List<List<String>> tableData = [
-      ['Product Name', '물건'],
-      ['Price', '\$${10000.toString()}'],
-      // Add more details as needed
-    ];
-
-    for (var item in data ?? []){
-      for (var key in item.keys) {
-        debugPrint('$key: ${item[key]}');
-      }
-      debugPrint('====================');
-    }
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('검색 결과'),
       ),
-      body: Center(
-          child: Column(
-            children: [
-              Text('검색어 : $keyword'),
-              Container(
-                alignment: Alignment.center,
-                transformAlignment: Alignment.center,
-                margin: const EdgeInsets.all(8.0),
-                child: SelectionArea(
-                  child: SearchResultTable(
-                      data: tableData),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            Text(
+                '검색어 : $keyword', maxLines: 1, overflow: TextOverflow.ellipsis),
+            Text('검색 결과 ${data?.length ?? 0} 건'),
+            if (data != null && data!.isNotEmpty)
+              for (var item in data!)
+                Container(
+                  alignment: Alignment.center,
+                  transformAlignment: Alignment.center,
+                  margin: const EdgeInsets.all(8.0),
+                  child: SearchResultTable(data: item ?? {}),
                 ),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                child: const Text('홈으로!'),
-              ),
-            ],
-          )
+          ],
+        ),
       ),
     );
   }
+}
+
+List<String> generateCustomTitle(List<Map<String, dynamic>?>? data) {
+  return data?.map((item) {
+    if (item != null) {
+      String manufacturer = item["제조수입업체명"] != null
+          ? '${item["제조수입업체명"]}\n'
+          : '';
+      String product = item["제품명"] ?? item["모델명"] ?? item["품목명"] ?? '';
+      if (manufacturer.isEmpty && product.isEmpty) return '제품공시정보';
+      return '$manufacturer$product';
+    }
+    return '';
+  }).toList() ?? [];
 }
