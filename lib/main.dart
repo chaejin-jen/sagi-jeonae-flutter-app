@@ -94,7 +94,7 @@ class _MyHomePageState extends State<MyHomePage> {
             context,
             MaterialPageRoute(
               builder: (context) =>
-                  SearchInfoPage(keyword: userInput, data: searchResult),
+                  SearchResultPage(keyword: userInput, data: searchResult),
             ),
           );
         });
@@ -106,11 +106,11 @@ class _MyHomePageState extends State<MyHomePage> {
 }
 
 
-class SearchInfoPage extends StatelessWidget {
+class SearchResultPage extends StatelessWidget {
   final String keyword;
   final List<Map<String, dynamic>?>? data;
 
-  const SearchInfoPage({
+  const SearchResultPage({
     super.key,
     required this.keyword,
     required this.data
