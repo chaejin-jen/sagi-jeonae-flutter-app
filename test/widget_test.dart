@@ -16,10 +16,16 @@ void main() {
     await tester.pumpWidget(
       const MaterialApp(
         home: Scaffold(
-          body: SearchResultTable(data: [
-            ['1', 'aaa'],
-            ['2', 'bbb']
-          ],),
+          body: SearchResultTable(data: {
+            'NO': 'data',
+            'Ha': {
+              'He': 'Ho',
+              'Hey': {
+                'Hoy': 'ha',
+                'Yoi': 'thang'
+              },
+              'Heu': 'Hou'}
+          },),
         ),
       ),
     );
