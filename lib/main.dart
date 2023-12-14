@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:sagi_jeonae_app/src/services/search_service.dart';
+import 'package:sagi_jeonae_app/src/services/udipotal_mfds_service.dart';
 import 'package:sagi_jeonae_app/src/widgets/search_textfield_button.dart';
 import 'package:sagi_jeonae_app/src/widgets/search_result_table.dart';
+import 'package:sagi_jeonae_app/src/widgets/search_result_web_view.dart';
 import 'package:sagi_jeonae_app/src/widgets/common/toggle_list_view.dart';
 
 void main() {
@@ -75,8 +77,10 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  void _handleSearch(Future<List<Map<String, dynamic>>?> Function(String) searchFunction) {
+  void _handleSearch(Future<
+      List<Map<String, dynamic>>?> Function(String) searchFunction) async {
     String userInput = _inputController.text.trim();
+    final udipotalService = UdiportalMfdsService();
 
     if (userInput.isEmpty) {
       final snackBar = SnackBar(
@@ -90,15 +94,36 @@ class _MyHomePageState extends State<MyHomePage> {
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
     } else {
       try {
-        searchFunction(userInput).then((searchResult) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) =>
-                  SearchResultPage(keyword: userInput, data: searchResult),
-            ),
-          );
-        });
+        final searchResult = await searchFunction(userInput);
+        final String modelName = searchResult != null
+            ? searchResult[0]["품명 및 모델명"] ?? ''
+            : '';
+        final String companyName = searchResult != null
+            ? searchResult[0]["제조자(수입자)"] ?? ''
+            : '';
+
+        final productHtml = modelName.isNotEmpty ? await udipotalService
+            .fetchMedicalDeviceDataByModelName(modelName) : null;
+        final recallHtml = modelName.isNotEmpty ? await udipotalService
+            .fetchRecallDataByModelName(modelName) : null;
+        final companyHtml = companyName.isNotEmpty
+            ? await udipotalService
+            .fetchDisciplinaryDataByCompanyName(companyName)
+            : null;
+        // debugPrint(html);
+        if (!context.mounted) return;
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) =>
+                SearchResultPage(
+                  keyword: userInput,
+                  data: searchResult,
+                  productHtml: productHtml,
+                  recallHtml: recallHtml,
+                  companyHtml: companyHtml,),
+          ),
+        );
       } catch (e) {
         debugPrint('Error during search: $e');
       }
@@ -106,31 +131,49 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
-
 class SearchResultPage extends StatelessWidget {
   final String keyword;
   final List<Map<String, dynamic>?>? data;
+  final String? productHtml;
+  final String? recallHtml;
+  final String? companyHtml;
 
   const SearchResultPage({
     super.key,
     required this.keyword,
-    required this.data
+    this.data,
+    this.productHtml,
+    this.recallHtml,
+    this.companyHtml,
   });
 
   @override
   Widget build(BuildContext context) {
+    final customTitles = generateCustomTitle(data);
+    if (productHtml != null) {
+      customTitles.add('[의료기기정보포탈] 의료기기 조회');
+    }
+    if (recallHtml != null) {
+      customTitles.add('[의료기기정보포탈] 회수대상 조회');
+    }
+    if (companyHtml != null) {
+      customTitles.add('[의료기기정보포탈] 행정처분 조회');
+    }
     return Scaffold(
       appBar: AppBar(
         title: const Text('검색 결과'),
       ),
       body: Column(
           children: [
-            Text('검색어 : $keyword', maxLines: 1, overflow: TextOverflow.ellipsis),
+            Text(
+                '검색어 : $keyword', maxLines: 1,
+                overflow: TextOverflow.ellipsis),
             Text('검색 결과 ${data?.length ?? 0} 건'),
             if (data != null && data!.isNotEmpty)
               Expanded(
-                child: ToggleListView(
-                  customTitles: generateCustomTitle(data),
+                child:
+                ToggleListView(
+                  customTitles: customTitles,
                   children: [
                     for (var item in data!)
                       Container(
@@ -138,6 +181,21 @@ class SearchResultPage extends StatelessWidget {
                         transformAlignment: Alignment.center,
                         margin: const EdgeInsets.all(8.0),
                         child: SearchResultTable(data: item ?? {}),
+                      ),
+                    if (productHtml != null)
+                      SearchResultWebView(
+                        initialUrl: 'http://udiportal.mfds.go.kr/search/data/MNU10029#item',
+                        html: productHtml,
+                      ),
+                    if (recallHtml != null)
+                      SearchResultWebView(
+                        initialUrl: 'http://udiportal.mfds.go.kr/recall/MNU10035',
+                        html: recallHtml,
+                      ),
+                    if (companyHtml != null)
+                      SearchResultWebView(
+                        initialUrl: 'http://udiportal.mfds.go.kr/disps/MNU10036',
+                        html: companyHtml,
                       ),
                   ],
                 ),

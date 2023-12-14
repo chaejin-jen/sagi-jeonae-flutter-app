@@ -30,6 +30,7 @@ class ToggleListViewState extends State<ToggleListView> {
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
+      shrinkWrap: true,
       itemCount: widget.children.length,
       itemBuilder: (context, index) {
         return Column(
