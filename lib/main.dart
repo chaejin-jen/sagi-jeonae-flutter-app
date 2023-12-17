@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:sagi_jeonae_app/src/services/search_service.dart';
+import 'package:sagi_jeonae_app/src/data/enums/search_type.dart';
+import 'package:sagi_jeonae_app/src/services/search_service_handler.dart';
 import 'package:sagi_jeonae_app/src/services/udipotal_mfds_service.dart';
 import 'package:sagi_jeonae_app/src/widgets/search_textfield_button.dart';
 import 'package:sagi_jeonae_app/src/widgets/search_result_table.dart';
@@ -40,8 +41,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final searchService = SearchService();
-
     return DefaultTabController(
       length: 3,
       child: Scaffold(
@@ -59,17 +58,17 @@ class _MyHomePageState extends State<MyHomePage> {
             children: [
               SearchTextFieldButton(
                   controller: _inputController,
-                  onSearch: () => _handleSearch(searchService.searchByUrl)
+                  onSearch: () => _handleSearch(SearchType.url)
               ),
               SearchTextFieldButton(
                   controller: _inputController,
                   onSearch: () =>
-                      _handleSearch(searchService.searchByProductName)
+                      _handleSearch(SearchType.product)
               ),
               SearchTextFieldButton(
                   controller: _inputController,
                   onSearch: () =>
-                      _handleSearch(searchService.searchByCompanyName)
+                      _handleSearch(SearchType.company)
               ),
             ]
         ),
@@ -77,8 +76,7 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  void _handleSearch(Future<
-      List<Map<String, dynamic>>?> Function(String) searchFunction) async {
+  void _handleSearch(SearchType searchType) async {
     String userInput = _inputController.text.trim();
     final udipotalService = UdiportalMfdsService();
 
@@ -94,7 +92,8 @@ class _MyHomePageState extends State<MyHomePage> {
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
     } else {
       try {
-        final searchResult = await searchFunction(userInput);
+        final searchResult = await SearchServiceHandler.fetchSearchResults(
+            searchType, userInput);
         final String modelName = searchResult != null
             ? searchResult[0]["품명 및 모델명"] ?? ''
             : '';
