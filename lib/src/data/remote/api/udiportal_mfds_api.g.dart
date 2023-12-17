@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'udipotal_mfds_api.dart';
+part of 'udiportal_mfds_api.dart';
 
 // **************************************************************************
 // RetrofitGenerator

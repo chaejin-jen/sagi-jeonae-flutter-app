@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
-import 'package:sagi_jeonae_app/src/data/model/udipotal_mfds_data_model.dart';
-import 'package:sagi_jeonae_app/src/data/remote/api/udipotal_mfds_api.dart';
+import 'package:sagi_jeonae_app/src/data/model/udiportal_mfds_data_model.dart';
+import 'package:sagi_jeonae_app/src/data/remote/api/udiportal_mfds_api.dart';
 
 class UdiportalMfdsService {
   final UdiportalMfdsApi _udiportApi;

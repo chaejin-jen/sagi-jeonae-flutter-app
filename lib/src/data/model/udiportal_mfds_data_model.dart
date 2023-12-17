@@ -1,7 +1,7 @@
 import 'package:json_annotation/json_annotation.dart';
 import 'package:retrofit/http.dart';
 
-part 'udipotal_mfds_data_model.g.dart';
+part 'udiportal_mfds_data_model.g.dart';
 
 @JsonSerializable()
 class MedicalDeviceParams {

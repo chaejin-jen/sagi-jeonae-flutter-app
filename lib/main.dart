@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sagi_jeonae_app/src/data/enums/search_type.dart';
 import 'package:sagi_jeonae_app/src/services/search_service_handler.dart';
-import 'package:sagi_jeonae_app/src/services/udipotal_mfds_service.dart';
+import 'package:sagi_jeonae_app/src/services/udiportal_mfds_service.dart';
 import 'package:sagi_jeonae_app/src/widgets/search_textfield_button.dart';
 import 'package:sagi_jeonae_app/src/widgets/search_result_table.dart';
 import 'package:sagi_jeonae_app/src/widgets/search_result_web_view.dart';
