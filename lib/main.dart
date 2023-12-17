@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sagi_jeonae_app/src/data/enums/search_type.dart';
 import 'package:sagi_jeonae_app/src/services/search_service_handler.dart';
-import 'package:sagi_jeonae_app/src/services/udiportal_mfds_service.dart';
+import 'package:sagi_jeonae_app/src/services/udiportal_mfds_service_handler.dart';
 import 'package:sagi_jeonae_app/src/widgets/search_textfield_button.dart';
 import 'package:sagi_jeonae_app/src/widgets/search_result_table.dart';
 import 'package:sagi_jeonae_app/src/widgets/search_result_web_view.dart';
@@ -78,7 +78,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _handleSearch(SearchType searchType) async {
     String userInput = _inputController.text.trim();
-    final udipotalService = UdiportalMfdsService();
 
     if (userInput.isEmpty) {
       final snackBar = SnackBar(
@@ -94,22 +93,12 @@ class _MyHomePageState extends State<MyHomePage> {
       try {
         final searchResult = await SearchServiceHandler.fetchSearchResults(
             searchType, userInput);
-        final String modelName = searchResult != null
-            ? searchResult[0]["품명 및 모델명"] ?? ''
-            : '';
-        final String companyName = searchResult != null
-            ? searchResult[0]["제조자(수입자)"] ?? ''
-            : '';
-
-        final productHtml = modelName.isNotEmpty ? await udipotalService
-            .fetchMedicalDeviceDataByModelName(modelName) : null;
-        final recallHtml = modelName.isNotEmpty ? await udipotalService
-            .fetchRecallDataByModelName(modelName) : null;
-        final companyHtml = companyName.isNotEmpty
-            ? await udipotalService
-            .fetchDisciplinaryDataByCompanyName(companyName)
-            : null;
-        // debugPrint(html);
+        Map<String, String?> htmlData = {};
+        if (searchType == SearchType.url && searchResult != null &&
+            searchResult[0].containsKey("의료기기 허가")) {
+          htmlData =
+          await UdiportalMfdsServiceHandler.fetchHtmlData(searchResult[0]);
+        }
         if (!context.mounted) return;
         Navigator.push(
           context,
@@ -118,9 +107,10 @@ class _MyHomePageState extends State<MyHomePage> {
                 SearchResultPage(
                   keyword: userInput,
                   data: searchResult,
-                  productHtml: productHtml,
-                  recallHtml: recallHtml,
-                  companyHtml: companyHtml,),
+                  productHtml: htmlData['productHtml'],
+                  recallHtml: htmlData['recallHtml'],
+                  companyHtml: htmlData['companyHtml'],
+                ),
           ),
         );
       } catch (e) {
