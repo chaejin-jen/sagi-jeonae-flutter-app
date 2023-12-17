@@ -110,6 +110,8 @@ class _MyHomePageState extends State<MyHomePage> {
                   productHtml: htmlData['productHtml'],
                   recallHtml: htmlData['recallHtml'],
                   companyHtml: htmlData['companyHtml'],
+                  showNonMedicalDeviceMessage: searchType == SearchType.url &&
+                      htmlData['productHtml'] == null ? true : false,
                 ),
           ),
         );
@@ -126,6 +128,7 @@ class SearchResultPage extends StatelessWidget {
   final String? productHtml;
   final String? recallHtml;
   final String? companyHtml;
+  final bool showNonMedicalDeviceMessage;
 
   const SearchResultPage({
     super.key,
@@ -134,6 +137,7 @@ class SearchResultPage extends StatelessWidget {
     this.productHtml,
     this.recallHtml,
     this.companyHtml,
+    required this.showNonMedicalDeviceMessage,
   });
 
   @override
@@ -157,7 +161,9 @@ class SearchResultPage extends StatelessWidget {
             Text(
                 '검색어 : $keyword', maxLines: 1,
                 overflow: TextOverflow.ellipsis),
-            Text('검색 결과 ${data?.length ?? 0} 건'),
+            showNonMedicalDeviceMessage ? const Text(
+                "의료기기가 아닙니다.", textScaleFactor: 2) : Text(
+                '검색 결과 ${data?.length ?? 0} 건'),
             if (data != null && data!.isNotEmpty)
               Expanded(
                 child:
