@@ -1,9 +1,9 @@
 import 'package:dio/dio.dart';
 import 'package:retrofit/http.dart';
-import 'package:sagi_jeonae_app/src/data/model/udipotal_mfds_data_model.dart';
+import 'package:sagi_jeonae_app/src/data/model/udiportal_mfds_data_model.dart';
 
 
-part 'udipotal_mfds_api.g.dart';
+part 'udiportal_mfds_api.g.dart';
 
 @RestApi(baseUrl: "http://udiportal.mfds.go.kr")
 abstract class UdiportalMfdsApi {

@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'udipotal_mfds_data_model.dart';
+part of 'udiportal_mfds_data_model.dart';
 
 // **************************************************************************
 // JsonSerializableGenerator

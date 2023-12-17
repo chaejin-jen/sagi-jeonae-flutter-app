@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:sagi_jeonae_app/src/services/search_service.dart';
-import 'package:sagi_jeonae_app/src/services/udipotal_mfds_service.dart';
+import 'package:sagi_jeonae_app/src/data/enums/search_type.dart';
+import 'package:sagi_jeonae_app/src/services/search_service_handler.dart';
+import 'package:sagi_jeonae_app/src/services/udiportal_mfds_service_handler.dart';
 import 'package:sagi_jeonae_app/src/widgets/search_textfield_button.dart';
 import 'package:sagi_jeonae_app/src/widgets/search_result_table.dart';
 import 'package:sagi_jeonae_app/src/widgets/search_result_web_view.dart';
@@ -40,8 +41,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final searchService = SearchService();
-
     return DefaultTabController(
       length: 3,
       child: Scaffold(
@@ -59,17 +58,17 @@ class _MyHomePageState extends State<MyHomePage> {
             children: [
               SearchTextFieldButton(
                   controller: _inputController,
-                  onSearch: () => _handleSearch(searchService.searchByUrl)
+                  onSearch: () => _handleSearch(SearchType.url)
               ),
               SearchTextFieldButton(
                   controller: _inputController,
                   onSearch: () =>
-                      _handleSearch(searchService.searchByProductName)
+                      _handleSearch(SearchType.product)
               ),
               SearchTextFieldButton(
                   controller: _inputController,
                   onSearch: () =>
-                      _handleSearch(searchService.searchByCompanyName)
+                      _handleSearch(SearchType.company)
               ),
             ]
         ),
@@ -77,10 +76,8 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  void _handleSearch(Future<
-      List<Map<String, dynamic>>?> Function(String) searchFunction) async {
+  void _handleSearch(SearchType searchType) async {
     String userInput = _inputController.text.trim();
-    final udipotalService = UdiportalMfdsService();
 
     if (userInput.isEmpty) {
       final snackBar = SnackBar(
@@ -94,23 +91,14 @@ class _MyHomePageState extends State<MyHomePage> {
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
     } else {
       try {
-        final searchResult = await searchFunction(userInput);
-        final String modelName = searchResult != null
-            ? searchResult[0]["품명 및 모델명"] ?? ''
-            : '';
-        final String companyName = searchResult != null
-            ? searchResult[0]["제조자(수입자)"] ?? ''
-            : '';
-
-        final productHtml = modelName.isNotEmpty ? await udipotalService
-            .fetchMedicalDeviceDataByModelName(modelName) : null;
-        final recallHtml = modelName.isNotEmpty ? await udipotalService
-            .fetchRecallDataByModelName(modelName) : null;
-        final companyHtml = companyName.isNotEmpty
-            ? await udipotalService
-            .fetchDisciplinaryDataByCompanyName(companyName)
-            : null;
-        // debugPrint(html);
+        final searchResult = await SearchServiceHandler.fetchSearchResults(
+            searchType, userInput);
+        Map<String, String?> htmlData = {};
+        if (searchType == SearchType.url && searchResult != null &&
+            searchResult[0].containsKey("의료기기 허가")) {
+          htmlData =
+          await UdiportalMfdsServiceHandler.fetchHtmlData(searchResult[0]);
+        }
         if (!context.mounted) return;
         Navigator.push(
           context,
@@ -119,9 +107,12 @@ class _MyHomePageState extends State<MyHomePage> {
                 SearchResultPage(
                   keyword: userInput,
                   data: searchResult,
-                  productHtml: productHtml,
-                  recallHtml: recallHtml,
-                  companyHtml: companyHtml,),
+                  productHtml: htmlData['productHtml'],
+                  recallHtml: htmlData['recallHtml'],
+                  companyHtml: htmlData['companyHtml'],
+                  showNonMedicalDeviceMessage: searchType == SearchType.url &&
+                      htmlData['productHtml'] == null ? true : false,
+                ),
           ),
         );
       } catch (e) {
@@ -137,6 +128,7 @@ class SearchResultPage extends StatelessWidget {
   final String? productHtml;
   final String? recallHtml;
   final String? companyHtml;
+  final bool showNonMedicalDeviceMessage;
 
   const SearchResultPage({
     super.key,
@@ -145,6 +137,7 @@ class SearchResultPage extends StatelessWidget {
     this.productHtml,
     this.recallHtml,
     this.companyHtml,
+    required this.showNonMedicalDeviceMessage,
   });
 
   @override
@@ -168,7 +161,9 @@ class SearchResultPage extends StatelessWidget {
             Text(
                 '검색어 : $keyword', maxLines: 1,
                 overflow: TextOverflow.ellipsis),
-            Text('검색 결과 ${data?.length ?? 0} 건'),
+            showNonMedicalDeviceMessage ? const Text(
+                "의료기기가 아닙니다.", textScaleFactor: 2) : Text(
+                '검색 결과 ${data?.length ?? 0} 건'),
             if (data != null && data!.isNotEmpty)
               Expanded(
                 child:
@@ -212,7 +207,8 @@ List<String> generateCustomTitle(List<Map<String, dynamic>?>? data) {
       String manufacturer = item["제조수입업체명"] != null
           ? '${item["제조수입업체명"]}\n'
           : '';
-      String product = item["제품명"] ?? item["모델명"] ?? item["품목명"] ?? '';
+      String product = item["제품명"] ?? item["모델명"] ?? item["품목명"] ??
+          item["업소명"] ?? '';
       if (manufacturer.isEmpty && product.isEmpty) return '제품공시정보';
       return '$manufacturer$product';
     }
