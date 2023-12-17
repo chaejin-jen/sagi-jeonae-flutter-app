@@ -201,7 +201,8 @@ List<String> generateCustomTitle(List<Map<String, dynamic>?>? data) {
       String manufacturer = item["제조수입업체명"] != null
           ? '${item["제조수입업체명"]}\n'
           : '';
-      String product = item["제품명"] ?? item["모델명"] ?? item["품목명"] ?? '';
+      String product = item["제품명"] ?? item["모델명"] ?? item["품목명"] ??
+          item["업소명"] ?? '';
       if (manufacturer.isEmpty && product.isEmpty) return '제품공시정보';
       return '$manufacturer$product';
     }
