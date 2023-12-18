@@ -24822,7 +24822,7 @@ throw A.c(s)},
 yo(a,b){var s=0,r=A.W(t.ge),q,p,o
 var $async$yo=A.X(function(c,d){if(c===1)return A.T(d,r)
 while(true)switch(s){case 0:o=new A.agr(A.aoK(null))
-o.b="http://localhost:23465"
+o.b="http://xn--9i1b67o.xn--ok0bn46a3wdpsc.xn--hk3b17f.xn--3e0b707e:23465"
 p=new A.a72(o)
 case 3:switch(a.a){case 0:s=5
 break
